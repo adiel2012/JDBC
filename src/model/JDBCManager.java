@@ -187,7 +187,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/"+JDBC.basedatos, JDBC.usuario, JDBC.clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + JDBC.basedatos, JDBC.usuario, JDBC.clave);
 
             String fn = "";
             int i = 0;
@@ -200,20 +200,18 @@ public class JDBCManager {
                 i++;
             }
 
-
             String query = "select  " + fn + " from " + tablename + " ";
 
             PreparedStatement st = con.prepareStatement(query);
 
             ResultSet rs = st.executeQuery();
 
-            
             while (rs.next()) {
                 String[] row = new String[fieldnames.length];
                 for (i = 0; i < fieldnames.length; i++) {
                     Class fieldtype = fieldtypes[i];
                     String fieldname = fieldnames[i];
-               // String fieldvalue = fieldvalues[i];
+                    // String fieldvalue = fieldvalues[i];
 
                     if (fieldtype.equals(String.class)) {
                         row[i] = rs.getString(fieldname);
@@ -222,9 +220,81 @@ public class JDBCManager {
                     }
                 }//for
 
-               res.add(row);
+                res.add(row);
 
-                
+            }
+
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return res;
+    }
+
+    public static String[] getrowgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldnamesWhere, Class[] fieldtypesWhere) {
+        String[] res = null;
+        try {
+            // TODO code application logic here
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + JDBC.basedatos, JDBC.usuario, JDBC.clave);
+
+            String fn = "";
+            int i = 0;
+            for (String fieldname : fieldnames) {
+                if (i != 0) {
+                    fn += ",";
+                }
+                fn += fieldname;
+
+                i++;
+            }
+
+            String fnW = "";
+            i = 0;
+            for (String fieldname : fieldnamesWhere) {
+                if (i != 0) {
+                    fnW += " and ";
+                }
+                fnW += fieldname + "=? ";
+
+                i++;
+            }
+
+            String query = "select  " + fn + " from " + tablename + " where " + fnW;
+
+            PreparedStatement st = con.prepareStatement(query);
+
+            for (i = 0; i < fieldnames.length; i++) {
+                Class fieldtype = fieldtypes[i];
+                String fieldname = fieldnames[i];
+                // String fieldvalue = fieldvalues[i];
+
+                if (fieldtype.equals(String.class)) {
+                    //res[i] = rs.getString(fieldname);
+                    st.setString(i, fieldname);
+                } else if (fieldtype.equals(int.class)) {
+                    // res[i] = String.valueOf(rs.getInt(fieldname));
+                    st.setInt(i, Integer.parseInt(fieldname));
+                }
+            }//for
+
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                res = new String[fieldnames.length];
+                for (i = 0; i < fieldnames.length; i++) {
+                    Class fieldtype = fieldtypes[i];
+                    String fieldname = fieldnames[i];
+                    // String fieldvalue = fieldvalues[i];
+
+                    if (fieldtype.equals(String.class)) {
+                        res[i] = rs.getString(fieldname);
+                    } else if (fieldtype.equals(int.class)) {
+                        res[i] = String.valueOf(rs.getInt(fieldname));
+                    }
+                }//for
+
             }
 
         } catch (ClassNotFoundException | SQLException ex) {
