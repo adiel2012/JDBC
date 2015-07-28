@@ -11,9 +11,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdbc.JDBC;
+
 /**
  *
  * @author Laboratorio 3
@@ -29,8 +32,8 @@ public class JDBCManager {
     private JDBCManager() {
 
     }
-    
-       private static int insertgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
+
+    public static int insertgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
         try {
             // TODO code application logic here
 
@@ -76,7 +79,7 @@ public class JDBCManager {
         return 0;
     }
 
-    private static int deletegeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
+    public static int deletegeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
         try {
             // TODO code application logic here
 
@@ -89,10 +92,10 @@ public class JDBCManager {
                 if (i != 0) {
                     condicion += " and ";
                 }
-                condicion += " "+fieldname+"= ? " ;
-                
+                condicion += " " + fieldname + "= ? ";
+
                 i++;
-            }          
+            }
 
             query += condicion;
             PreparedStatement st = con.prepareStatement(query);
@@ -116,8 +119,8 @@ public class JDBCManager {
         return 0;
     }
 
-    private static int updategeneric(String tablename, String[] whereids, Class[] whereClass,String[] wherefieldvalues,  String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
-       try {
+    public static int updategeneric(String tablename, String[] whereids, Class[] whereClass, String[] wherefieldvalues, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
+        try {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
@@ -129,28 +132,25 @@ public class JDBCManager {
                 if (i != 0) {
                     temp += " , ";
                 }
-                temp += " "+fieldname+"= ? " ;
-                
+                temp += " " + fieldname + "= ? ";
+
                 i++;
-            }        
+            }
 
             query += temp + " where ";
-            
-            
-             i = 0;
+
+            i = 0;
             for (String fieldname : whereids) {
                 if (i != 0) {
                     query += " and ";
                 }
-                query += " "+fieldname+"= ? " ;
-                
+                query += " " + fieldname + "= ? ";
+
                 i++;
-            }  
-            
-            
-            
+            }
+
             PreparedStatement st = con.prepareStatement(query);
-            int pp=1;
+            int pp = 1;
             for (i = 0; i < fieldnames.length; i++) {
                 Class fieldtype = fieldtypes[i];
                 String fieldvalue = fieldvalues[i];
@@ -160,7 +160,7 @@ public class JDBCManager {
                     st.setInt(pp++, Integer.parseInt(fieldvalue));
                 }
             }
-            
+
             for (i = 0; i < whereids.length; i++) {
                 Class fieldtype = whereClass[i];
                 String fieldvalue = wherefieldvalues[i];
@@ -170,11 +170,6 @@ public class JDBCManager {
                     st.setInt(pp++, Integer.parseInt(fieldvalue));
                 }
             }
-            
-            
-            
-             
-            
 
             return st.executeUpdate();
 
@@ -182,13 +177,62 @@ public class JDBCManager {
             Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return 0;   
-    
+        return 0;
+
     }
 
+    public static ArrayList<String[]> getlistgeneric(String tablename, String[] fieldnames, Class[] fieldtypes) {
+        ArrayList<String[]> res = new ArrayList<>();
+        try {
+            // TODO code application logic here
 
-    
-    
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/"+JDBC.basedatos, JDBC.usuario, JDBC.clave);
+
+            String fn = "";
+            int i = 0;
+            for (String fieldname : fieldnames) {
+                if (i != 0) {
+                    fn += ",";
+                }
+                fn += fieldname;
+
+                i++;
+            }
+
+
+            String query = "select  " + fn + " from " + tablename + " ";
+
+            PreparedStatement st = con.prepareStatement(query);
+
+            ResultSet rs = st.executeQuery();
+
+            
+            while (rs.next()) {
+                String[] row = new String[fieldnames.length];
+                for (i = 0; i < fieldnames.length; i++) {
+                    Class fieldtype = fieldtypes[i];
+                    String fieldname = fieldnames[i];
+               // String fieldvalue = fieldvalues[i];
+
+                    if (fieldtype.equals(String.class)) {
+                        row[i] = rs.getString(fieldname);
+                    } else if (fieldtype.equals(int.class)) {
+                        row[i] = String.valueOf(rs.getInt(fieldname));
+                    }
+                }//for
+
+               res.add(row);
+
+                
+            }
+
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return res;
+    }
 
     public JDBCManager getInstance() {
         if (__instance == null) {
