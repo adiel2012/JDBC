@@ -23,9 +23,9 @@ import jdbc.JDBC;
  */
 public class JDBCManager {
 
-    private String usuario = "root";
-    private String clave = "";
-    private String basedatos = "test";
+    public static String usuario="root";
+    public static String clave="";
+    public static String basedatos="midb";
 
     private JDBCManager __instance = new JDBCManager();
 
@@ -187,7 +187,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + JDBC.basedatos, JDBC.usuario, JDBC.clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
 
             String fn = "";
             int i = 0;
