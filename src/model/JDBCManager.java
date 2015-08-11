@@ -302,6 +302,62 @@ public class JDBCManager {
         return res;
     }
 
+     public static ArrayList<String[]> PreparedQuery(String sql,Class[] Paramstypes,String[] ParamsValues,Class[] Resulttypes ){
+    ArrayList<String[]> res = new ArrayList<>();
+            
+        try {
+            
+            
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+            
+            PreparedStatement st = con.prepareStatement(sql);
+
+            for (int i = 0; i < Paramstypes.length; i++) {
+                Class fieldtype = Paramstypes[i];
+                String fieldvalue = ParamsValues[i];
+                // String fieldvalue = fieldvalues[i];
+
+                if (fieldtype.equals(String.class)) {
+                    //res[i] = rs.getString(fieldname);
+                    st.setString(i+1, fieldvalue);
+                } else if (fieldtype.equals(int.class)) {
+                    // res[i] = String.valueOf(rs.getInt(fieldname));
+                    st.setInt(i+1, Integer.parseInt(fieldvalue));
+                }
+            }//for
+            
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                String[] row = new String[Resulttypes.length];
+                for (int i = 0; i < Resulttypes.length; i++) {
+                    Class fieldtype = Resulttypes[i];
+//                    String fieldname = Resultnames[i];
+                    // String fieldvalue = fieldvalues[i];
+
+                    if (fieldtype.equals(String.class)) {
+                        row[i] = rs.getString(i+1);
+                    } else if (fieldtype.equals(int.class)) {
+                        row[i] = String.valueOf(rs.getInt(i+1));
+                    }
+                }//for
+                res.add(row);
+
+            }
+            
+            return res;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+       return res;
+    
+    }
+    
+    
     public JDBCManager getInstance() {
         if (__instance == null) {
             __instance = new JDBCManager();
