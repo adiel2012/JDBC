@@ -47,7 +47,10 @@ public class JDBCRepositoryEstudiante implements IRepositoryEstudiante{
 
     @Override
     public EstudianteEntity getbyID(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         String[] row = JDBCManager.getrowgeneric("Estudiante",new String[]{"id","cedula","nombre","edad"} , new Class[]{int.class,String.class,String.class,int.class},new String[]{"id"} , new Class[]{int.class},new String[]{String.valueOf(id)});
+         EstudianteEntity instance = new EstudianteEntity( Integer.parseInt( row[0]), row[1], row[2], Integer.parseInt( row[3]));
+         return instance;
+        
     }
     
 }

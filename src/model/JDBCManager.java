@@ -10,12 +10,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdbc.JDBC;
 
 /**
  *
@@ -38,7 +36,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/midb", "root", "");
+             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "insert into " + tablename + " ";
             String fn = "(";
             String fv = "(";
@@ -84,7 +82,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/midb", "root", "");
+             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "delete from " + tablename + " where ";
             String condicion = " ";
             int i = 0;
@@ -124,7 +122,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/midb", "root", "");
+             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "update   " + tablename + " set ";
             String temp = " ";
             int i = 0;
@@ -231,13 +229,13 @@ public class JDBCManager {
         return res;
     }
 
-    public static String[] getrowgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldnamesWhere, Class[] fieldtypesWhere) {
+    public static String[] getrowgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldnamesWhere, Class[] fieldtypesWhere, String[] fieldvaluesWhere) {
         String[] res = null;
         try {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + JDBC.basedatos, JDBC.usuario, JDBC.clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
 
             String fn = "";
             int i = 0;
@@ -265,17 +263,17 @@ public class JDBCManager {
 
             PreparedStatement st = con.prepareStatement(query);
 
-            for (i = 0; i < fieldnames.length; i++) {
-                Class fieldtype = fieldtypes[i];
-                String fieldname = fieldnames[i];
+            for (i = 0; i < fieldtypesWhere.length; i++) {
+                Class fieldtype = fieldtypesWhere[i];
+                String fieldvalue = fieldvaluesWhere[i];
                 // String fieldvalue = fieldvalues[i];
 
                 if (fieldtype.equals(String.class)) {
                     //res[i] = rs.getString(fieldname);
-                    st.setString(i, fieldname);
+                    st.setString(i+1, fieldvalue);
                 } else if (fieldtype.equals(int.class)) {
                     // res[i] = String.valueOf(rs.getInt(fieldname));
-                    st.setInt(i, Integer.parseInt(fieldname));
+                    st.setInt(i+1, Integer.parseInt(fieldvalue));
                 }
             }//for
 
