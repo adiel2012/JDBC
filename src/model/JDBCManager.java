@@ -420,6 +420,46 @@ public class JDBCManager {
 
     }
 
+    
+     public static int PreparedExecute(String sql, Class[] Paramstypes, String[] ParamsValues) {
+        ArrayList<String[]> res = new ArrayList<>();
+
+        try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+
+            PreparedStatement st = con.prepareStatement(sql);
+
+            for (int i = 0; i < Paramstypes.length; i++) {
+                Class fieldtype = Paramstypes[i];
+                String fieldvalue = ParamsValues[i];
+                // String fieldvalue = fieldvalues[i];
+
+                if (fieldtype.equals(String.class)) {
+                    //res[i] = rs.getString(fieldname);
+                    st.setString(i + 1, fieldvalue);
+                } else if (fieldtype.equals(int.class)) {
+                    // res[i] = String.valueOf(rs.getInt(fieldname));
+                    st.setInt(i + 1, Integer.parseInt(fieldvalue));
+                }
+            }//for
+
+            int affected = st.executeUpdate();
+            return affected;            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return 0;
+
+    }
+
+    
+    
     public JDBCManager getInstance() {
         if (__instance == null) {
             __instance = new JDBCManager();
