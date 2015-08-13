@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -21,9 +22,9 @@ import java.util.logging.Logger;
  */
 public class JDBCManager {
 
-    public static String usuario="root";
-    public static String clave="";
-    public static String basedatos="midb";
+    public static String usuario = "root";
+    public static String clave = "";
+    public static String basedatos = "midb";
 
     private JDBCManager __instance = new JDBCManager();
 
@@ -36,7 +37,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "insert into " + tablename + " ";
             String fn = "(";
             String fv = "(";
@@ -77,12 +78,75 @@ public class JDBCManager {
         return 0;
     }
 
+    public static int insertgeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues, ArrayList<String> outGeneratedKeys) {
+        try {
+            // TODO code application logic here
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+            String query = "insert into " + tablename + " ";
+            String fn = "(";
+            String fv = "(";
+            int i = 0;
+            for (String fieldname : fieldnames) {
+                if (i != 0) {
+                    fn += ",";
+                    fv += ",";
+                }
+                fn += fieldname;
+                fv += "?";
+
+                i++;
+            }
+
+            fn += ") ";
+            fv += ") ";
+
+            query += fn + " values " + fv;
+            PreparedStatement st = con.prepareStatement(query);
+
+            for (i = 0; i < fieldnames.length; i++) {
+                Class fieldtype = fieldtypes[i];
+                String fieldvalue = fieldvalues[i];
+                if (fieldtype.equals(String.class)) {
+                    st.setString(i + 1, fieldvalue);
+                } else if (fieldtype.equals(int.class)) {
+                    st.setInt(i + 1, Integer.parseInt(fieldvalue));
+                }
+            }
+
+            int res = st.executeUpdate();
+
+            if (res > 0) {
+                int autoIncKeyFromApi = -1;
+
+                ResultSet rs = st.getGeneratedKeys();
+                ResultSetMetaData rsMetaData = rs.getMetaData();
+
+                int numberOfColumns = rsMetaData.getColumnCount();
+                if (rs.next()) {
+                    for (int j = 0; j < numberOfColumns; j++) {
+                        autoIncKeyFromApi = rs.getInt(j + 1);
+                        outGeneratedKeys.add(String.valueOf(autoIncKeyFromApi));
+                    }
+
+                }
+            }
+
+            return res;
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return 0;
+    }
+
     public static int deletegeneric(String tablename, String[] fieldnames, Class[] fieldtypes, String[] fieldvalues) {
         try {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "delete from " + tablename + " where ";
             String condicion = " ";
             int i = 0;
@@ -122,7 +186,7 @@ public class JDBCManager {
             // TODO code application logic here
 
             Class.forName("com.mysql.jdbc.Driver");
-             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
             String query = "update   " + tablename + " set ";
             String temp = " ";
             int i = 0;
@@ -270,10 +334,10 @@ public class JDBCManager {
 
                 if (fieldtype.equals(String.class)) {
                     //res[i] = rs.getString(fieldname);
-                    st.setString(i+1, fieldvalue);
+                    st.setString(i + 1, fieldvalue);
                 } else if (fieldtype.equals(int.class)) {
                     // res[i] = String.valueOf(rs.getInt(fieldname));
-                    st.setInt(i+1, Integer.parseInt(fieldvalue));
+                    st.setInt(i + 1, Integer.parseInt(fieldvalue));
                 }
             }//for
 
@@ -302,15 +366,14 @@ public class JDBCManager {
         return res;
     }
 
-     public static ArrayList<String[]> PreparedQuery(String sql,Class[] Paramstypes,String[] ParamsValues,Class[] Resulttypes ){
-    ArrayList<String[]> res = new ArrayList<>();
-            
+    public static ArrayList<String[]> PreparedQuery(String sql, Class[] Paramstypes, String[] ParamsValues, Class[] Resulttypes) {
+        ArrayList<String[]> res = new ArrayList<>();
+
         try {
-            
-            
+
             Class.forName("com.mysql.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + basedatos, usuario, clave);
-            
+
             PreparedStatement st = con.prepareStatement(sql);
 
             for (int i = 0; i < Paramstypes.length; i++) {
@@ -320,13 +383,13 @@ public class JDBCManager {
 
                 if (fieldtype.equals(String.class)) {
                     //res[i] = rs.getString(fieldname);
-                    st.setString(i+1, fieldvalue);
+                    st.setString(i + 1, fieldvalue);
                 } else if (fieldtype.equals(int.class)) {
                     // res[i] = String.valueOf(rs.getInt(fieldname));
-                    st.setInt(i+1, Integer.parseInt(fieldvalue));
+                    st.setInt(i + 1, Integer.parseInt(fieldvalue));
                 }
             }//for
-            
+
             ResultSet rs = st.executeQuery();
 
             if (rs.next()) {
@@ -337,27 +400,26 @@ public class JDBCManager {
                     // String fieldvalue = fieldvalues[i];
 
                     if (fieldtype.equals(String.class)) {
-                        row[i] = rs.getString(i+1);
+                        row[i] = rs.getString(i + 1);
                     } else if (fieldtype.equals(int.class)) {
-                        row[i] = String.valueOf(rs.getInt(i+1));
+                        row[i] = String.valueOf(rs.getInt(i + 1));
                     }
                 }//for
                 res.add(row);
 
             }
-            
+
             return res;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(JDBCManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-                
-       return res;
-    
+
+        return res;
+
     }
-    
-    
+
     public JDBCManager getInstance() {
         if (__instance == null) {
             __instance = new JDBCManager();
